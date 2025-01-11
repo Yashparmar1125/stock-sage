@@ -264,7 +264,7 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
               </tr>
             </thead>
             <tbody>
-              {data.prediction.futurePredictions.map((price, index) => (
+              {data.prediction.futurePredictions.map((price:number, index:number) => (
                 <motion.tr
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
