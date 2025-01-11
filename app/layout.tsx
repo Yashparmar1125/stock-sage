@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import './globals.css'
@@ -12,11 +12,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  //const [darkMode, setDarkMode] = useState(true)
-
-  //useEffect(() => {
-  //  document.documentElement.classList.toggle('dark', darkMode)
-  //}, [darkMode])
+  
 
   return (
     <html lang="en" suppressHydrationWarning>

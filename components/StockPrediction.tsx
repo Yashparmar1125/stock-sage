@@ -28,6 +28,7 @@ ChartJS.register(
 )
 
 interface PredictionData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   prediction: any
   nextDayPrice: number
   actualPrices: number[]
