@@ -49,6 +49,8 @@ interface PredictionData {
   rf: string           // Random Forest model info
 }
 
+
+
 export default function StockPrediction({ ticker }: { ticker: string }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -60,7 +62,7 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
       setError(null)
       try {
         const tick=ticker+'.NS'
-        const response = await fetch(`http://127.0.0.1:8000/api/predict?ticker=${tick}`,{
+        const response = await fetch(`https://stock-stage-backend.onrender.com/api/predict?${tick}`,{
           method: "GET",
           headers: {
             "Content-Type": "application/json",
