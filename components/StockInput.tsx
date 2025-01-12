@@ -202,3 +202,4 @@ export default function StockInput({ onSubmit }: StockInputProps) {
     </motion.div>
   )
 }
+
