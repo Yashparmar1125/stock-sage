@@ -62,7 +62,7 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
       setError(null)
       try {
         const tick=ticker+'.NS'
-        const response = await fetch(`https://stock-stage-backend.onrender.com/api/predict?${tick}`,{
+        const response = await fetch(`https://stock-stage-backend.onrender.com/api/predict/?ticker=${tick}`,{
           method: "GET",
           headers: {
             "Content-Type": "application/json",
