@@ -1,52 +1,119 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import Header from '../components/Header'
-import StockInput from '../components/StockInput'
-import StockPrediction from '../components/StockPrediction'
+import Header from '@/components/Header'
+import StockInput from '@/components/StockInput'
+import StockPrediction from '@/components/StockPrediction'
 
 export default function Home() {
   const [ticker, setTicker] = useState('')
+  const [key, setKey] = useState(0)
+
+  useEffect(() => {
+    // Set background color for html and body
+    document.documentElement.style.backgroundColor = '#0A0F1C'
+    document.body.style.backgroundColor = '#0A0F1C'
+    
+    return () => {
+      document.documentElement.style.backgroundColor = ''
+      document.body.style.backgroundColor = ''
+    }
+  }, [])
+
+  const handleTickerSubmit = (newTicker: string) => {
+    // Reset the component state
+    setTicker('')
+    setKey(prev => prev + 1)
+    
+    // Update with new ticker after a brief delay
+    setTimeout(() => {
+      setTicker(newTicker)
+    }, 100)
+  }
 
   return (
-    <div className="min-h-screen pb-12" suppressHydrationWarning={true}>
+    <main className="min-h-screen bg-[#0A0F1C] text-white relative overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="fixed inset-0 pointer-events-none opacity-50">
+        <div className="absolute top-1/4 -left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 -right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+      </div>
+
       <Header />
-      <main className="container mx-auto px-4 py-8 relative max-w-6xl">
+      
+      <div className="container mx-auto px-6 max-w-7xl pt-32">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h1 className="text-6xl font-bold mb-4 text-gray-200 relative inline-block">
-            StockSage AI
-            <motion.div
-              className="absolute -bottom-2 left-0 w-full h-2 bg-blue-500"
-              initial={{ width: 0 }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            />
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400">
+            Predict Stock Trends
           </h1>
-          <p className="text-xl mb-8 text-gray-400">
-            Predict the future of stocks with cutting-edge AI technology
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            Get accurate stock predictions powered by advanced machine learning algorithms.
+            Make informed investment decisions with StockSage.
           </p>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
-          >
-            Get Started
-          </motion.div>
         </motion.div>
-        <div className="glassmorphism p-8 mt-12 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
-          <StockInput onSubmit={setTicker} />
-          {ticker && <StockPrediction ticker={ticker} />}
-        </div>
-      </main>
-    </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <StockInput onSubmit={handleTickerSubmit} />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-8"
+        >
+          {ticker && <StockPrediction key={`${ticker}-${key}`} ticker={ticker} />}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+          {[
+            {
+              title: 'Advanced ML Models',
+              description: 'Powered by state-of-the-art machine learning algorithms for accurate predictions',
+              icon: '🤖'
+            },
+            {
+              title: 'Real-time Data',
+              description: 'Get up-to-the-minute stock data and predictions for informed decisions',
+              icon: '📊'
+            },
+            {
+              title: 'Easy to Use',
+              description: 'Simple and intuitive interface for both beginners and experienced traders',
+              icon: '✨'
+            }
+          ].map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
+              className="p-6 rounded-2xl bg-[#0A0F1C]/80 border border-white/10 transition-all duration-200"
+            >
+              <div className="text-4xl mb-4">{feature.icon}</div>
+              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <p className="text-gray-400">{feature.description}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </main>
   )
 }
 

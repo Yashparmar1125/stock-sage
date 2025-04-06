@@ -8,20 +8,20 @@ interface StockInputProps {
   onSubmit: (ticker: string) => void
 }
 
-const stockMapping: { [key: string]: string } = {
+export const stockMapping: { [key: string]: string } = {
   '3M India': '3MINDIA', 'Abbott India': 'ABBOTINDIA', 'Adani Enterprises': 'ADANIENT', 'Adani Green Energy': 'ADANIGREEN',
   'Adani Power': 'ADANIPOWER', 'Adani Ports': 'ADANIPORTS', 'Alembic Pharmaceuticals': 'APLLTD', 'Alkem Laboratories': 'ALKEM',
   'Ambuja Cements': 'AMBUJACEM', 'Aurobindo Pharma': 'AUROPHARMA', 'Axis Bank': 'AXISBANK', 'Bajaj Auto': 'BAJAJ-AUTO',
   'Bajaj Finance': 'BAJFINANCE', 'Bajaj Finserv': 'BAJAJFINSV', 'Bandhan Bank': 'BANDHANBNK', 'Bank of Baroda': 'BANKBARODA',
   'Bharti Airtel': 'BHARTIARTL', 'Birla Corporation': 'BIRLACORPN', 'Bosch Limited': 'BOSCHLTD', 'Britannia Industries': 'BRITANNIA',
   'Cadila Healthcare': 'CADILAHC', 'Canara Bank': 'CANBK', 'Cipla': 'CIPLA', 'Coal India': 'COALINDIA', 'Container Corporation of India': 'CONCOR',
-  'Divi’s Laboratories': 'DIVISLAB', 'Dabur India': 'DABUR', 'Dr. Reddy’s Laboratories': 'DRREDDY', 'Eicher Motors': 'EICHERMOT',
+  'Divis Laboratories': 'DIVISLAB', 'Dabur India': 'DABUR', 'Dr. Reddys Laboratories': 'DRREDDY', 'Eicher Motors': 'EICHERMOT',
   'Federal Bank': 'FEDERALBNK', 'GAIL India': 'GAIL', 'Godrej Consumer Products': 'GODREJCP', 'Grasim Industries': 'GRASIM',
   'HCL Technologies': 'HCLTECH', 'HDFC Asset Management': 'HDFCAMC', 'HDFC Bank': 'HDFCBANK', 'Hindalco Industries': 'HINDALCO',
   'Hindustan Zinc': 'HINDZINC', 'ICICI Bank': 'ICICIBANK', 'ICICI Lombard General Insurance': 'ICICIGI', 'Indiabulls Housing Finance': 'IBULHSGFIN',
   'IndusInd Bank': 'INDUSINDBK', 'Infosys': 'INFY', 'ITC Limited': 'ITC', 'JSW Steel': 'JSWSTEEL', 'Kajaria Ceramics': 'KAJARIACER',
   'Kotak Mahindra Bank': 'KOTAKBANK', 'Larsen & Toubro': 'LT', 'Lupin': 'LUPIN', 'Mahindra & Mahindra': 'M&M', 'Motherson Sumi': 'MOTHERSUMI',
-  'Marico': 'MARICO', 'Nestlé India': 'NESTLEIND', 'NMDC Limited': 'NMDC', 'NTPC Limited': 'NTPC', 'Oberoi Realty': 'OBEROIRLTY',
+  'Marico': 'MARICO', 'Nestle India': 'NESTLEIND', 'NMDC Limited': 'NMDC', 'NTPC Limited': 'NTPC', 'Oberoi Realty': 'OBEROIRLTY',
   'Oil and Natural Gas Corporation': 'ONGC', 'Power Grid Corporation of India': 'POWERGRID', 'Punjab National Bank': 'PNB',
   'RBL Bank': 'RBLBANK', 'Reliance Industries': 'RELIANCE', 'SBI Life Insurance': 'SBILIFE', 'Shree Cement': 'SHREECEM',
   'Siemens': 'SIEMENS', 'State Bank of India': 'SBI', 'Sun Pharmaceutical Industries': 'SUNPHARMA', 'Tata Chemicals': 'TATACHEM',
@@ -83,8 +83,6 @@ export default function StockInput({ onSubmit }: StockInputProps) {
   const [isFocused, setIsFocused] = useState(false)
   const [noMatches, setNoMatches] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  // Create a ref to hold the timeout
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -98,13 +96,13 @@ export default function StockInput({ onSubmit }: StockInputProps) {
         const filteredSuggestions = Object.keys(stockMapping).filter(stock =>
           stock.toLowerCase().includes(ticker.toLowerCase())
         )
-        setSuggestions(filteredSuggestions)
+        setSuggestions(filteredSuggestions.slice(0, 5))
         setNoMatches(filteredSuggestions.length === 0)
       } else {
         setSuggestions([])
         setNoMatches(false)
       }
-    }, 300) // Adjust the delay to your preference (e.g., 300ms)
+    }, 300)
 
     return () => {
       if (debounceTimeout.current) {
@@ -113,93 +111,113 @@ export default function StockInput({ onSubmit }: StockInputProps) {
     }
   }, [ticker])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const selectedTicker = stockMapping[ticker]
-    if (selectedTicker) {
-      onSubmit(selectedTicker)
-    } else {
-      onSubmit(ticker)
-    }
-  }
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setTicker(suggestion)
-    const selectedTicker = stockMapping[suggestion]
-    if (selectedTicker) {
-      onSubmit(selectedTicker)
-    } else {
-      onSubmit(suggestion)
-    }
-    setSuggestions([])
-  }
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="max-w-md mx-auto mb-12 relative"
-    >
-      <form onSubmit={handleSubmit}>
+    <div className="relative w-full max-w-3xl mx-auto">
+      <div className="relative">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/50 via-indigo-500/50 to-purple-500/50 rounded-xl blur-sm opacity-0 transition duration-300" />
         <div className="relative">
           <input
             ref={inputRef}
-            className="w-full bg-gray-800/50 text-gray-200 border-2 border-blue-500 rounded-full py-3 px-6 pr-24 leading-tight focus:outline-none focus:border-purple-500 transition-colors duration-200 backdrop-blur-sm"
             type="text"
-            placeholder="Enter company name (e.g., TCS)"
             value={ticker}
-            onChange={(e) => setTicker(e.target.value)}
+            onChange={(e) => {
+              setTicker(e.target.value)
+              if (e.target.value.length > 0) {
+                const filteredSuggestions = Object.keys(stockMapping).filter(stock =>
+                  stock.toLowerCase().includes(e.target.value.toLowerCase())
+                )
+                setSuggestions(filteredSuggestions.slice(0, 5))
+                setNoMatches(filteredSuggestions.length === 0)
+              } else {
+                setSuggestions([])
+                setNoMatches(false)
+              }
+            }}
             onFocus={() => setIsFocused(true)}
-            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+            onBlur={() => {
+              requestAnimationFrame(() => setIsFocused(false))
+            }}
+            placeholder="Search for a stock (e.g., Reliance, TCS, Infosys)"
+            className="w-full px-6 py-5 bg-[#0A0F1C]/90 border border-white/10 rounded-xl text-white/95 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500/20 transition-all duration-300"
           />
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-200 flex items-center"
-            type="submit"
-          >
-            <Search size={18} className="mr-2" />
-            Predict
-          </motion.button>
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+            <Search className="text-gray-400/60 w-5 h-5" />
+          </div>
         </div>
-      </form>
+      </div>
+
       <AnimatePresence>
-        {isFocused && suggestions.length > 0 && !noMatches && (
+        {isFocused && (suggestions.length > 0 || noMatches) && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }} 
-            className="absolute z-10 w-full mt-2 bg-gray-800/90 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto backdrop-blur-sm"
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute w-full mt-2 bg-[#0A0F1C]/90 backdrop-blur-sm rounded-xl border border-white/10 shadow-md overflow-hidden z-50"
           >
             {suggestions.map((suggestion, index) => (
               <motion.div
                 key={suggestion}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-                className="px-4 py-2 cursor-pointer hover:bg-blue-900 transition-colors duration-200"
-                onClick={() => handleSuggestionClick(suggestion)}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => {
+                  onSubmit(stockMapping[suggestion])
+                  setTicker('')
+                  setSuggestions([])
+                }}
               >
-                {suggestion}
+                <div className="px-6 py-4 hover:bg-white/5 cursor-pointer transition-all duration-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-white/90 font-medium">
+                      {suggestion}
+                    </span>
+                    <span className="block text-sm text-gray-500">
+                      {stockMapping[suggestion]}
+                    </span>
+                  </div>
+                </div>
               </motion.div>
             ))}
-          </motion.div>
-        )}
-        {isFocused && noMatches && ticker && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="absolute z-10 w-full mt-2 bg-gray-800/90 border border-gray-600 rounded-lg shadow-lg backdrop-blur-sm"
-          >
-            <div className="px-4 py-2 text-gray-300">No matching results</div>
+            {noMatches && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="px-6 py-4 text-gray-400 text-center"
+              >
+                No matches found
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="mt-8 text-center space-y-4"
+      >
+        <p className="text-sm text-gray-400 font-medium">
+          Popular stocks
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          {['Reliance', 'TCS', 'Infosys', 'HDFC Bank', 'ICICI Bank'].map((stock) => (
+            <button
+              key={stock}
+              onClick={() => {
+                const ticker = stockMapping[stock] || stock
+                onSubmit(ticker)
+                setTicker('')
+              }}
+              className="px-4 py-2 rounded-lg bg-[#0A0F1C]/90 border border-white/10 text-white/80 text-sm transition-all duration-200"
+            >
+              <span>{stock}</span>
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </div>
   )
 }
 
