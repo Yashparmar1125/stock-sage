@@ -8,6 +8,44 @@ interface StockInputProps {
   onSubmit: (ticker: string) => void
 }
 
+// Add stock categories for better organization
+const stockCategories: { [key: string]: string[] } = {
+  'Technology': ['TCS', 'INFY', 'WIPRO', 'TECHM', 'HCLTECH', 'MINDTREE', 'LTI', 'PERSISTENT'],
+  'Banking': ['HDFCBANK', 'ICICIBANK', 'SBIN', 'AXISBANK', 'KOTAKBANK', 'INDUSINDBK', 'FEDERALBNK', 'RBLBANK'],
+  'Consumer Goods': ['HINDUNILVR', 'ITC', 'BRITANNIA', 'DABUR', 'MARICO', 'GODREJCP', 'TATACONSUM'],
+  'Automotive': ['TATAMOTORS', 'M&M', 'BAJAJ-AUTO', 'HEROMOTOCO', 'EICHERMOT', 'MARUTI'],
+  'Energy': ['RELIANCE', 'ONGC', 'TATAPOWER', 'NTPC', 'POWERGRID', 'ADANIGREEN', 'ADANIPOWER'],
+  'Healthcare': ['SUNPHARMA', 'DRREDDY', 'CIPLA', 'DIVISLAB', 'BIOCON', 'APOLLOHOSP', 'LALPATHLAB'],
+  'Real Estate': ['DLF', 'GODREJPROP', 'OBEROIRLTY', 'MAHLIFE', 'SUNTECK', 'BRIGADE'],
+  'Telecom': ['BHARTIARTL', 'IDEA', 'VODAFONE', 'TATACOMM'],
+  'Metals & Mining': ['TATASTEEL', 'HINDALCO', 'JINDALSTEL', 'COALINDIA', 'NMDC', 'HINDZINC'],
+  'Retail': ['TITAN', 'TRENT', 'FBB', 'SHOPPERSSTOP', 'V2RETAIL', 'SPENCERS']
+};
+
+// Add stock descriptions for more information
+const stockDescriptions: { [key: string]: string } = {
+  'RELIANCE': 'India\'s largest conglomerate with interests in retail, telecom, and energy',
+  'TCS': 'Global IT services and consulting company',
+  'INFY': 'Leading IT services company with global presence',
+  'HDFCBANK': 'India\'s largest private sector bank by market capitalization',
+  'ICICIBANK': 'Major private sector bank with diverse financial services',
+  'SBIN': 'India\'s largest public sector bank',
+  'HINDUNILVR': 'Consumer goods company with strong portfolio of brands',
+  'ITC': 'Diversified conglomerate with interests in FMCG, hotels, and paperboards',
+  'TATAMOTORS': 'Automotive manufacturer with global presence',
+  'BHARTIARTL': 'India\'s largest telecom operator',
+  'SUNPHARMA': 'India\'s largest pharmaceutical company',
+  'DRREDDY': 'Global pharmaceutical company with focus on generics',
+  'ONGC': 'India\'s largest oil and gas exploration company',
+  'TATASTEEL': 'One of India\'s largest steel manufacturers',
+  'WIPRO': 'Global IT services company with focus on digital transformation',
+  'AXISBANK': 'Private sector bank with strong retail and corporate banking',
+  'KOTAKBANK': 'Private sector bank with focus on retail and corporate banking',
+  'BRITANNIA': 'Leading food company with strong biscuit portfolio',
+  'DABUR': 'Consumer goods company with focus on Ayurvedic products',
+  'MARICO': 'Consumer goods company with focus on personal care products'
+};
+
 export const stockMapping: { [key: string]: string } = {
   '3M India': '3MINDIA', 'Abbott India': 'ABBOTINDIA', 'Adani Enterprises': 'ADANIENT', 'Adani Green Energy': 'ADANIGREEN',
   'Adani Power': 'ADANIPOWER', 'Adani Ports': 'ADANIPORTS', 'Alembic Pharmaceuticals': 'APLLTD', 'Alkem Laboratories': 'ALKEM',
@@ -76,14 +114,57 @@ export const stockMapping: { [key: string]: string } = {
   'MAXHEALTH': 'MAXHEALTH',  'LIC': 'LIC', 'AARTIIND': 'AARTIIND'
 };
 
-
 export default function StockInput({ onSubmit }: StockInputProps) {
   const [ticker, setTicker] = useState('')
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [isFocused, setIsFocused] = useState(false)
   const [noMatches, setNoMatches] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [isHovered, setIsHovered] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
+
+  // Function to handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const normalizedTicker = ticker.trim().toUpperCase()
+    if (ticker.trim() === '') return
+    
+    // Check if the input is a direct ticker symbol
+    const directTicker = Object.values(stockMapping).find(
+      symbol => symbol.toLowerCase() === ticker.toLowerCase()
+    )
+    
+    if (directTicker) {
+      onSubmit(directTicker)
+      setTicker('')
+      return
+    }
+    
+    // Check if the input matches a stock name
+    const matchingStock = Object.keys(stockMapping).find(
+      stock => stock.toLowerCase() === ticker.toLowerCase()
+    )
+    
+    if (matchingStock) {
+      onSubmit(stockMapping[matchingStock])
+      setTicker('')
+      return
+    }
+    
+    // If no exact match, check for partial matches
+    const partialMatches = Object.keys(stockMapping).filter(
+      stock => stock.toLowerCase().includes(ticker.toLowerCase())
+    )
+    
+    if (partialMatches.length > 0) {
+      // Use the first match
+      onSubmit(stockMapping[partialMatches[0]])
+      setTicker('')
+    }
+    onSubmit(normalizedTicker)
+    setTicker('')
+  }
 
   useEffect(() => {
     // Debounce the search logic
@@ -96,7 +177,7 @@ export default function StockInput({ onSubmit }: StockInputProps) {
         const filteredSuggestions = Object.keys(stockMapping).filter(stock =>
           stock.toLowerCase().includes(ticker.toLowerCase())
         )
-        setSuggestions(filteredSuggestions.slice(0, 5))
+        setSuggestions(filteredSuggestions.slice(0, 8))
         setNoMatches(filteredSuggestions.length === 0)
       } else {
         setSuggestions([])
@@ -111,11 +192,41 @@ export default function StockInput({ onSubmit }: StockInputProps) {
     }
   }, [ticker])
 
+  // Get category for a stock
+  const getStockCategory = (stockName: string) => {
+    const ticker = stockMapping[stockName];
+    for (const [category, stocks] of Object.entries(stockCategories)) {
+      if (stocks.includes(ticker)) {
+        return category;
+      }
+    }
+    return 'Other';
+  };
+
+  // Get description for a stock
+  const getStockDescription = (stockName: string) => {
+    const ticker = stockMapping[stockName];
+    return stockDescriptions[ticker] || 'Leading company in its sector';
+  };
+
+  // Get popular stocks by category
+  const getPopularStocksByCategory = (category: string) => {
+    return stockCategories[category]?.slice(0, 5) || [];
+  };
+
   return (
     <div className="relative w-full max-w-3xl mx-auto">
-      <div className="relative">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/50 via-indigo-500/50 to-purple-500/50 rounded-xl blur-sm opacity-0 transition duration-300" />
-        <div className="relative">
+      <form onSubmit={handleSubmit} className="relative">
+        <div 
+          className={`absolute -inset-0.5 bg-gradient-to-r from-cyan-500/50 via-indigo-500/50 to-purple-500/50 rounded-xl blur-sm transition-all duration-300 ${
+            isFocused || isHovered ? 'opacity-100 scale-[1.02]' : 'opacity-0 scale-100'
+          }`} 
+        />
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           <input
             ref={inputRef}
             type="text"
@@ -126,7 +237,7 @@ export default function StockInput({ onSubmit }: StockInputProps) {
                 const filteredSuggestions = Object.keys(stockMapping).filter(stock =>
                   stock.toLowerCase().includes(e.target.value.toLowerCase())
                 )
-                setSuggestions(filteredSuggestions.slice(0, 5))
+                setSuggestions(filteredSuggestions.slice(0, 8))
                 setNoMatches(filteredSuggestions.length === 0)
               } else {
                 setSuggestions([])
@@ -138,13 +249,24 @@ export default function StockInput({ onSubmit }: StockInputProps) {
               requestAnimationFrame(() => setIsFocused(false))
             }}
             placeholder="Search for a stock (e.g., Reliance, TCS, Infosys)"
-            className="w-full px-6 py-5 bg-[#0A0F1C]/90 border border-white/10 rounded-xl text-white/95 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/20 focus:border-indigo-500/20 transition-all duration-300"
+            className={`w-full px-6 py-5 bg-[#0A0F1C]/90 border rounded-xl text-white/95 placeholder-gray-400 focus:outline-none focus:ring-1 transition-all duration-300 ${
+              isFocused || isHovered 
+                ? 'border-indigo-500/30 focus:ring-indigo-500/30 shadow-lg shadow-indigo-500/10' 
+                : 'border-white/10 focus:ring-indigo-500/20 focus:border-indigo-500/20'
+            }`}
           />
-          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-            <Search className="text-gray-400/60 w-5 h-5" />
-          </div>
+          <button 
+            type="submit"
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2 transition-all duration-300 ${
+              isFocused || isHovered 
+                ? 'text-indigo-300 scale-110' 
+                : 'text-indigo-400'
+            }`}
+          >
+            <Search className="w-5 h-5" />
+          </button>
         </div>
-      </div>
+      </form>
 
       <AnimatePresence>
         {isFocused && (suggestions.length > 0 || noMatches) && (
@@ -153,32 +275,47 @@ export default function StockInput({ onSubmit }: StockInputProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="absolute w-full mt-2 bg-[#0A0F1C]/90 backdrop-blur-sm rounded-xl border border-white/10 shadow-md overflow-hidden z-50"
+            className="absolute w-full mt-2 bg-[#0A0F1C]/95 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg shadow-indigo-500/5 overflow-hidden z-50"
           >
-            {suggestions.map((suggestion, index) => (
-              <motion.div
-                key={suggestion}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => {
-                  onSubmit(stockMapping[suggestion])
-                  setTicker('')
-                  setSuggestions([])
-                }}
-              >
-                <div className="px-6 py-4 hover:bg-white/5 cursor-pointer transition-all duration-200 flex items-center justify-between">
-                  <div>
-                    <span className="text-white/90 font-medium">
-                      {suggestion}
-                    </span>
-                    <span className="block text-sm text-gray-500">
-                      {stockMapping[suggestion]}
-                    </span>
+            {suggestions.map((suggestion, index) => {
+              const category = getStockCategory(suggestion);
+              const description = getStockDescription(suggestion);
+              const tickerSymbol = stockMapping[suggestion];
+              
+              return (
+                <motion.div
+                  key={suggestion}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => {
+                    onSubmit(stockMapping[suggestion])
+                    setTicker('')
+                    setSuggestions([])
+                  }}
+                  className="group"
+                >
+                  <div className="px-6 py-4 hover:bg-white/10 cursor-pointer transition-all duration-200 border-b border-white/5 last:border-b-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center">
+                        <span className="text-white/90 font-medium text-lg group-hover:text-white transition-colors">
+                          {suggestion}
+                        </span>
+                        <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-500/20 text-indigo-300 group-hover:bg-indigo-500/30 transition-colors">
+                          {tickerSymbol}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 bg-white/5 px-2 py-0.5 rounded group-hover:bg-white/10 transition-colors">
+                        {category}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors line-clamp-2">
+                      {description}
+                    </p>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
             {noMatches && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -196,28 +333,37 @@ export default function StockInput({ onSubmit }: StockInputProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="mt-8 text-center space-y-4"
+        className="mt-8"
       >
-        <p className="text-sm text-gray-400 font-medium">
-          Popular stocks
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          {['Reliance', 'TCS', 'Infosys', 'HDFC Bank', 'ICICI Bank'].map((stock) => (
-            <button
-              key={stock}
-              onClick={() => {
-                const ticker = stockMapping[stock] || stock
-                onSubmit(ticker)
-                setTicker('')
-              }}
-              className="px-4 py-2 rounded-lg bg-[#0A0F1C]/90 border border-white/10 text-white/80 text-sm transition-all duration-200"
-            >
-              <span>{stock}</span>
-            </button>
-          ))}
+        
+        
+        
+        
+        
+        
+        <div className="text-center">
+          <p className="text-sm text-gray-400 font-medium mb-3">
+            Popular stocks
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {['Reliance', 'TCS', 'Infosys', 'HDFC Bank', 'ICICI Bank'].map((stock) => (
+              <button
+                key={stock}
+                onClick={() => {
+                  const ticker = stockMapping[stock] || stock
+                  onSubmit(ticker)
+                  setTicker('')
+                }}
+                className="px-4 py-2 rounded-lg bg-[#0A0F1C]/90 border border-white/10 text-white/80 text-sm transition-all duration-200 hover:bg-white/10 hover:shadow-md hover:shadow-white/5 hover:scale-105"
+              >
+                <span>{stock}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </motion.div>
     </div>
   )
 }
+
 

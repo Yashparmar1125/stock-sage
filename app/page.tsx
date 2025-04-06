@@ -22,23 +22,43 @@ export default function Home() {
   }, [])
 
   const handleTickerSubmit = (newTicker: string) => {
-    // Reset the component state
+    // Reset ticker to trigger loading state
     setTicker('')
+    // Increment key to force re-render of StockPrediction
     setKey(prev => prev + 1)
     
-    // Update with new ticker after a brief delay
-    setTimeout(() => {
-      setTicker(newTicker)
-    }, 100)
+    // Set the new ticker immediately to trigger loading state
+    setTicker(newTicker)
   }
 
   return (
     <main className="min-h-screen bg-[#0A0F1C] text-white relative overflow-hidden">
       {/* Background gradient orbs */}
       <div className="fixed inset-0 pointer-events-none opacity-50">
-        <div className="absolute top-1/4 -left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+        <motion.div 
+          className="absolute top-1/4 -left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="absolute top-1/3 -right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.3, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        />
       </div>
 
       <Header />
@@ -100,17 +120,28 @@ export default function Home() {
             }
           ].map((feature, index) => (
             <motion.div
-              key={feature.title}
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
-              className="p-6 rounded-2xl bg-[#0A0F1C]/80 border border-white/10 transition-all duration-200"
+              transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/5"
             >
               <div className="text-4xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
               <p className="text-gray-400">{feature.description}</p>
             </motion.div>
           ))}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          className="mt-20 text-center"
+        >
+          <p className="text-gray-400 text-sm">
+            © 2023 StockSage. All rights reserved.
+          </p>
         </motion.div>
       </div>
     </main>

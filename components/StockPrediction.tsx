@@ -20,6 +20,117 @@ import { TrendingUp, TrendingDown, XCircle, Loader2, BarChart2, Gauge, Percent }
 import { stockMapping } from './StockInput'
 import type { ChartOptions } from 'chart.js'
 
+// Loading Overlay Component
+const LoadingOverlay = ({ ticker }: { ticker: string }) => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0F1C]/95 backdrop-blur-md"
+    >
+      <div className="relative w-full max-w-2xl mx-auto p-8">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden rounded-2xl">
+          <motion.div 
+            className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl"
+            animate={{ 
+              scale: [1, 1.1, 1],
+              opacity: [0.5, 0.8, 0.5]
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div className="absolute inset-0 bg-[#0A0F1C]/80 rounded-2xl" />
+        </div>
+        
+        {/* Content container */}
+        <div className="relative z-10 flex flex-col items-center">
+          {/* Animated logo/icon */}
+          <div className="relative w-32 h-32 mb-8">
+            <motion.div
+              className="absolute inset-0 rounded-full border-4 border-indigo-500/30"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div
+              className="absolute inset-0 rounded-full border-t-4 border-indigo-500"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.div
+              className="absolute inset-0 rounded-full border-r-4 border-cyan-500"
+              animate={{ rotate: -360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Loader2 className="w-16 h-16 text-indigo-400" />
+              </motion.div>
+            </div>
+          </div>
+          
+          {/* Text content */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-center"
+          >
+            <h3 className="text-2xl font-bold text-white mb-3">Analyzing {ticker}</h3>
+            <p className="text-gray-400 mb-6 text-lg">Fetching market data and generating predictions</p>
+            
+            {/* Progress bar */}
+            <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden mb-4">
+              <motion.div
+                className="h-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500"
+                initial={{ x: "-100%" }}
+                animate={{ x: "100%" }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+            
+            {/* Loading steps */}
+            <div className="flex flex-col space-y-3 mt-6">
+              {[
+                "Connecting to market data API...",
+                "Retrieving historical price data...",
+                "Calculating technical indicators...",
+                "Running prediction models...",
+                "Generating insights..."
+              ].map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.3, duration: 0.5 }}
+                  className="flex items-center space-x-3"
+                >
+                  <motion.div
+                    className="w-2 h-2 rounded-full bg-indigo-500"
+                    animate={{ 
+                      scale: [1, 1.5, 1],
+                      opacity: [0.5, 1, 0.5]
+                    }}
+                    transition={{ 
+                      duration: 1, 
+                      repeat: Infinity, 
+                      delay: index * 0.2,
+                      ease: "easeInOut" 
+                    }}
+                  />
+                  <span className="text-gray-300">{step}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 const registerChartJS = () => {
   if (typeof window !== 'undefined') {
     ChartJS.register(
@@ -75,6 +186,7 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
   const [isClient, setIsClient] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('1M')
   const abortControllerRef = useRef<AbortController | null>(null)
+  const [isFetching, setIsFetching] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -86,6 +198,7 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
     setLoading(true)
     setError(null)
     setData(null)
+    setIsFetching(true)
 
     // Cancel any ongoing fetch request
     if (abortControllerRef.current) {
@@ -125,7 +238,11 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
         }
         
         // Only set data if the component is still mounted and this is still the current request
-        setData(jsonData)
+        if (!abortControllerRef.current?.signal.aborted) {
+          setData(jsonData)
+          setLoading(false)
+          setIsFetching(false)
+        }
       } catch (error) {
         // Only set error if the request wasn't aborted
         if (error instanceof Error && error.name !== 'AbortError') {
@@ -139,11 +256,8 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
           } else {
             setError(error instanceof Error ? error.message : 'Failed to fetch prediction data')
           }
-        }
-      } finally {
-        // Only update loading state if the request wasn't aborted
-        if (abortControllerRef.current?.signal.aborted === false) {
           setLoading(false)
+          setIsFetching(false)
         }
       }
     }
@@ -158,21 +272,8 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
     }
   }, [ticker]) // Make sure ticker is in dependency array
 
-  if (!isClient || loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
-          <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-        </motion.div>
-      </div>
-    )
+  if (!isClient || loading || isFetching) {
+    return <LoadingOverlay ticker={ticker} />
   }
 
   if (error) {
@@ -180,7 +281,7 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center p-8 bg-red-900/10 border border-red-500/30 rounded-xl"
+        className="text-center p-8 bg-red-900/10 border border-red-500/30 rounded-xl shadow-lg shadow-red-500/5"
       >
         <div className="inline-block p-3 rounded-full bg-red-500/20 text-red-400 mb-4">
           <XCircle className="w-7 h-7" />
@@ -248,7 +349,6 @@ export default function StockPrediction({ ticker }: { ticker: string }) {
   const latestSMA = getLatestIndicatorValue(data.prediction.technicalIndicators.sma);
   const latestEMA = getLatestIndicatorValue(data.prediction.technicalIndicators.ema);
   const latestRSI = getLatestIndicatorValue(data.prediction.technicalIndicators.rsi);
-  const latestOBV = getLatestIndicatorValue(data.prediction.technicalIndicators.obv);
   const latestVolume = getLatestIndicatorValue(data.prediction.marketData?.volume);
   const volatility = data.prediction.marketData?.volatility || 0;
   const sentiment = data.prediction.marketData?.sentiment || 'Neutral';
