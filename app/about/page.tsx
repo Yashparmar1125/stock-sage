@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { BarChart2, Database, Brain, TrendingUp, CheckCircle, ArrowRight, LineChart, Zap } from 'lucide-react'
 import Link from 'next/link'
 
