@@ -119,6 +119,7 @@ export default function StockInput({ onSubmit }: StockInputProps) {
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [isFocused, setIsFocused] = useState(false)
   const [noMatches, setNoMatches] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [isHovered, setIsHovered] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -210,6 +211,7 @@ export default function StockInput({ onSubmit }: StockInputProps) {
   };
 
   // Get popular stocks by category
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getPopularStocksByCategory = (category: string) => {
     return stockCategories[category]?.slice(0, 5) || [];
   };

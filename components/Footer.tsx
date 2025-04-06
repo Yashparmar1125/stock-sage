@@ -11,8 +11,8 @@ export default function Footer() {
   
   const socialLinks = [
     { icon: Github, href: 'https://github.com/Yashparmar1125', label: 'GitHub' },
-    { icon: Instagram, href: 'https://www.instagram.com/yash_parmar_1125/', label: 'Instagram' },
-    { icon: Linkedin, href: 'https://www.linkedin.com/in/yash-parmar-961b3b205/', label: 'LinkedIn' }
+    { icon: Instagram, href: 'https://www.instagram.com/Yash11_25/', label: 'Instagram' },
+    { icon: Linkedin, href: 'https://www.linkedin.com/in/yashparmar1125/', label: 'LinkedIn' }
   ]
 
   return (

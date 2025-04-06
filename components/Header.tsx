@@ -136,7 +136,7 @@ export default function Header() {
             ))}
             
             <motion.a
-              href="https://github.com/Yashparmar1125/stock-sage"
+              href="https://github.com/Yashparmar1125/StockSage-AI"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-gray-300 text-sm transition-all duration-300 hover:border-indigo-500/40 hover:text-white flex items-center gap-2.5 hover:bg-white/[0.08]"
